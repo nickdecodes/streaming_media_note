@@ -17,7 +17,7 @@ http://ffmpeg.org/download.html
 tar -jxf ffmpeg-4.3.2.tar.bz2
 # 配置ffmepg
 cd ffmpeg-4.3.2/
-./configure --prefix="/usr/local/ffmpeg/" --enable-gpi --enable-nongree --enable-ffplay --enable-libfdk-aac --enable-libmp3lame --enable-libx264 --enable-libx265 --enable-filter=delogo --enable-debug --disable-optimizations --enable-libspeex --enable-shared --enable-pthreads --enable-version3 --enable-hardcoded-tables --extra-idflags=-L/usr/local/ffmpeg/lib
+./configure --prefix="/usr/local/ffmpeg/" --enable-gpl --enable-nonfree --enable-ffplay --enable-libfdk-aac --enable-libmp3lame --enable-libx264 --enable-libx265 --enable-filter=delogo --enable-debug --disable-optimizations --enable-libspeex --enable-shared --enable-pthreads --enable-version3 --enable-hardcoded-tables --extra-ldflags=-L/usr/local/ffmpeg/lib
 # 如果有错误提示，解决方式看下面
 make -j8
 sudo make install
@@ -132,3 +132,67 @@ sudo make install
 # 3.重新配置、编译、安装ffmpeg, 再运行ffplay命令，即可正常运行
 ```
 
+## mac环境
+
+### 1. 前提准备
+
+- 下载源码 [ffmpeg-4.3.2.tar.xz](https://links.jianshu.com/go?to=https%3A%2F%2Fffmpeg.org%2Freleases%2Fffmpeg-4.3.2.tar.xz)
+
+> 源码地址: [https://github.com/FFmpeg/FFmpeg](https://links.jianshu.com/go?to=https%3A%2F%2Fgithub.com%2FFFmpeg%2FFFmpeg)
+
+### 2. 编译安装
+
+依赖项
+
+- **`brew install yasm`**
+    - ffmpeg的编译过程依赖yasm
+    - 若未安装yasm会出现错误：nasm/yasm not found or too old. Use --disable-x86asm for a crippled build.
+- **`brew install sdl2`**
+    - ffplay 依赖于 sdl2
+    - 如果缺少sdl2，就无法编译出ffplay
+- **`brew install fdk-aac`**
+    - 不然会出现错误：ERROR: libfdk_aac not found
+- **`brew install x264`**
+    - 不然会出现错误：ERROR: libx264 not found
+    - [x264 地址](https://links.jianshu.com/go?to=https%3A%2F%2Fdownload.videolan.org%2Fpub%2Fvideolan%2Fx264%2Fbinaries%2Fmacosx-x86-64%2F)
+- **`brew install x265`**
+    - 不然会出现错误：ERROR: libx265 not found
+
+其实 `x264`、`x265`、`sdl2` 都在曾经执行 `brew install ffmpeg` 的时候安装过了
+
+- **可以通过 `brew list` 的结果查看是否安装过**
+    - `brew list | grep fdk`
+    - `brew list | grep x26`
+    - `brew list | grep -E 'fdk|x26'`
+- **如果已经安装过，可以不用再执行 `brew install`**
+
+```bash
+./configure --prefix="/usr/local/ffmpeg/" --enable-gpl --enable-nonfree --enable-ffplay --enable-libfdk-aac --enable-libmp3lame --enable-libx264 --enable-libx265 --enable-filter=delogo --enable-debug --disable-optimizations --enable-libspeex --enable-shared --enable-pthreads --enable-version3 --enable-hardcoded-tables --extra-ldflags=-L/usr/local/ffmpeg/lib
+```
+
+- **`--prefix`**
+    - 用以指定编译好的FFmpeg安装到哪个目录
+    - 一般放到 `/usr/local/ffmpeg` 中即可
+- **`--enable-shared`**
+    - 生成动态库
+- **`--disable-static`**
+    - 不生成静态库
+- **`--enable-libfdk-aac`**
+    - 将fdk-aac内置到FFmpeg中
+- **`--enable-libx264`**
+    - 将x264内置到FFmpeg中
+- **`--enable-libx265`**
+    - 将 x265 内置到 FFmpeg 中
+- **`--enable-gpl`**
+    - x264、x265 要求开启 [GPL License](https://links.jianshu.com/go?to=https%3A%2F%2Fwww.gnu.org%2Flicenses%2Fgpl-3.0.html)
+- **`--enable-nonfree`**
+    - - [fdk-aac与GPL不兼容](https://links.jianshu.com/go?to=https%3A%2F%2Fgithub.com%2FFFmpeg%2FFFmpeg%2Fblob%2Fmaster%2FLICENSE.md)，需要通过开启nonfree进行配置
+
+------
+
+你可以通过 **`configure --help`** 命令查看每一个配置项的作用。
+
+```bash
+make -j8 # 接下来开始解析源代码目录中的 Makefile 文件，进行编译。-j8 表示允许同时执行8个编译任务。
+make install # 之后就是配置PATH
+```
